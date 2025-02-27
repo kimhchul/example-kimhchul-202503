@@ -1,8 +1,11 @@
 package com.example.productapi.service;
 
+import com.example.productapi.dto.ResponseCtgInfoDto;
+import com.example.productapi.dto.ResponseLowPriceByCtgDto;
+import com.example.productapi.dto.ResponseLowPriceByNameDto;
+import com.example.productapi.dto.ResponseCtgDto;
 import com.example.productapi.entity.Product;
 import com.example.productapi.repository.ProductRepository;
-import org.hibernate.jpa.internal.util.LogHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +18,7 @@ public class ProductService {
 	private ProductRepository productRepository;
 
 	// 1. 컬럼별 최저가격과 해당 Name 조회 및 총합 계산
-	public Map<String, Object> getLowPriceByCtg() {
+	public ResponseLowPriceByCtgDto getLowPriceByCtg() {
 
 
 		/**
@@ -28,7 +31,12 @@ public class ProductService {
 
 		List<Product> products = productRepository.findAll();
 
-		Map<String, Object> result = new HashMap<>();
+		//Map<String, Object> result = new HashMap<>();
+		ResponseLowPriceByCtgDto result = new ResponseLowPriceByCtgDto();
+
+		List<ResponseCtgDto> result_ctg_list = new ArrayList<ResponseCtgDto>();
+		result.setCtgList(result_ctg_list);	//없으면 Empty
+
 		int totalSum = 0;
 
 		for (int i = 1; i <= 8; i++) {
@@ -45,16 +53,23 @@ public class ProductService {
 			}
 
 			totalSum += minPrice;
-			result.put(ctgField, Map.of("name", minName, "price", minPrice));
+
+
+			ResponseCtgDto itemDto = new ResponseCtgDto();
+			itemDto.setCtgName(ctgField);
+			itemDto.setBrandName(minName);
+			itemDto.setPrice(minPrice);
+			result_ctg_list.add(itemDto);
 		}
 
-		result.put("totalSum", totalSum);
-		result.put("description", "카테고리별 최저가 항목 정보 & 카테고리별 최저가 항목의 합");
+		result.setTotalSum(totalSum);
+		result.setDescription("카테고리별 최저가 항목 정보 & 카테고리별 최저가 항목의 합");
+
 		return result;
 	}
 
 	// 2. Name별 8개 컬럼 총합이 가장 작은 상품 조회
-	public Map<String, Object> getLowPriceByName() {
+	public ResponseLowPriceByNameDto getLowPriceByName() {
 
 		/**
 		 * 1. 전체 테이블 내용 모두 가져옴
@@ -63,6 +78,8 @@ public class ProductService {
 		 * 2. 각 브랜드별 카테고리 합산 가격을 구함
 		 * 3. 최소값을 가지는 브랜드의 정보를 리턴함
 		 */
+		ResponseLowPriceByNameDto result = new ResponseLowPriceByNameDto();
+
 
 		List<Product> products = productRepository.findAll();
 
@@ -80,19 +97,23 @@ public class ProductService {
 		}
 
 		if (minProduct != null) {
-			Map<String, Object> result = new HashMap<>();
-			result.put("name", minProduct.getName());
-			result.put("total", minTotal);
-			result.put("details", minProduct);
-			result.put("description", "항목의 총합이 가장 작은 항목의 정보");
-			return result;
+			result.setCtgName(minProduct.getName());
+			result.setTotalSum(minTotal);
+			result.setProduct(minProduct);
+			result.setDescription("항목의 총합이 가장 작은 항목의 정보");
+
+		}
+		else
+		{
+
+			result.setDescription("조회실패.");
 		}
 
-		return null;
+		return result;
 	}
 
 	// 3. 특정 컬럼에서 최고가격의 상품 조회
-	public Map<String, Object>  getCtgInfo(String ctgName) {
+	public ResponseCtgInfoDto getCtgInfo(String ctgName) {
 
 		/**
 		 * 1. 전체 테이블 내용 모두 가져옴
@@ -105,7 +126,7 @@ public class ProductService {
 
 		List<Product> products = productRepository.findAll();
 
-		Map<String, Object> result = new HashMap<>();
+		ResponseCtgInfoDto result = new ResponseCtgInfoDto();
 
 		Product minProduct = null;
 		Product maxProduct = null;
@@ -136,12 +157,19 @@ public class ProductService {
 
 
 		if (minProduct != null) {
-			result.put("minProduct", minProduct);
+			result.setMinProduct(minProduct);
 		}
 		if (maxProduct != null) {
-			result.put("maxproductinfo", maxProduct);
+			result.setMaxProduct(maxProduct);
 		}
 
+		if (minProduct == null || maxProduct == null)
+		{
+			result.setDescription("정상조회 실패");
+		}
+		else {
+			result.setDescription("카테고리기준 브랜드정보");
+		}
 
 		return result;
 	}
