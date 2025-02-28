@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,9 +49,12 @@ class ProductIntegrationTest {
 		assertThat(body).isNotNull();
 
 
-		assertThat(body.get("ctg1")).isEqualTo(Map.of("name", "B", "price", 10500));
-		assertThat(body.get("ctg4")).isEqualTo(Map.of("name", "A", "price", 9000));
-		assertThat(body.get("ctg8")).isEqualTo(Map.of("name", "H", "price", 2000));
+
+
+		assertThat(body.get("totalSum")).isEqualTo(35400);
+
+		List ctgList = (List) body.get("ctgList");
+		assertThat(ctgList.size()).isEqualTo(8);
 	}
 
 	@Test
@@ -61,9 +65,8 @@ class ProductIntegrationTest {
 		Map<String, Object> body = response.getBody();
 		assertThat(body).isNotNull();
 
-
-		assertThat(body.get("name")).isEqualTo("B");
-		assertThat(body.get("total")).isEqualTo(37600);
+		assertThat(body.get("totalSum")).isEqualTo(37600);
+		assertThat(body.get("ctgName")).isEqualTo("B");
 	}
 
 	@Test
@@ -78,4 +81,6 @@ class ProductIntegrationTest {
 				, "ctg5",2100, "ctg6",1600, "ctg7",2000, "ctg8",2000));
 
 	}
+
+
 }
