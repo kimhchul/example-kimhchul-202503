@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class ResponseCtgDto {
 
-	String ctgName;
-	String brandName;
+	String ctg;
+	String brand;
 	Integer price;
 }

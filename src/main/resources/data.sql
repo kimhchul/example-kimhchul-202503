@@ -1,4 +1,4 @@
-INSERT INTO product (name, ctg1, ctg2, ctg3, ctg4, ctg5, ctg6, ctg7, ctg8) VALUES
+INSERT INTO product (brand, ctg_tops, ctg_outerwear, ctg_pants, ctg_sneakers, ctg_bag, ctg_hat, ctg_socks, ctg_accessories) VALUES
                                                                                 ('A', 11200, 5500, 4200, 9000, 2000, 1700, 1800, 2300),
                                                                                 ('B', 10500, 5900, 3800, 9100, 2100, 2000, 2000, 2200),
                                                                                 ('C', 10000, 6200, 3300, 9200, 2200, 1900, 2200, 2100),

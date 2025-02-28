@@ -9,7 +9,7 @@ public class ResponseLowPriceByNameDto {
 
 	Integer totalSum;
 
-	String ctgName;
+	String ctg;
 
 	Product product;
 
