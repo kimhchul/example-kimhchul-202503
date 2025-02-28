@@ -36,8 +36,6 @@ class ProductIntegrationTest {
 		productRepository.save(new Product("I", 11400, 6700, 3200, 9500, 2400, 1700, 1700, 2400));
 
 
-
-
 	}
 
 	@Test
@@ -66,7 +64,7 @@ class ProductIntegrationTest {
 		assertThat(body).isNotNull();
 
 		assertThat(body.get("totalSum")).isEqualTo(37600);
-		assertThat(body.get("ctgName")).isEqualTo("B");
+		assertThat(body.get("ctg")).isEqualTo("B");
 	}
 
 	@Test
@@ -77,7 +75,7 @@ class ProductIntegrationTest {
 		Map<String, Object> body = response.getBody();
 		assertThat(body).isNotNull();
 
-		assertThat(body.get("minProduct")).isEqualTo(Map.of("name", "H", "ctg1",10800, "ctg2",6300, "ctg3",3100, "ctg4",9700
+		assertThat(body.get("minProduct")).isEqualTo(Map.of("brand", "H", "ctg1",10800, "ctg2",6300, "ctg3",3100, "ctg4",9700
 				, "ctg5",2100, "ctg6",1600, "ctg7",2000, "ctg8",2000));
 
 	}

@@ -94,10 +94,10 @@ public class ProductService {
 
 
 		Product minProduct = null;
-		int minTotal = Integer.MAX_VALUE;
+		Integer minTotal = Integer.MAX_VALUE;
 
 		for (Product p : products) {
-			int total = p.getCtgTops() + p.getCtgOuterwear() + p.getCtgPants() + p.getCtgSneakers()
+			Integer total = p.getCtgTops() + p.getCtgOuterwear() + p.getCtgPants() + p.getCtgSneakers()
 					+ p.getCtgBag() + p.getCtgHat() + p.getCtgSocks() + p.getCtgAccessories();
 			if (total < minTotal) {
 				minTotal = total;
@@ -244,15 +244,15 @@ public class ProductService {
 
 	// 헬퍼 메서드: 동적으로 ctg 값 가져오기
 	private int getCtgValue(Product product, String ctgField) {
-		switch (ctgField.toLowerCase()) {
-			case "상의": return product.getCtgTops();
-			case "아우터": return product.getCtgOuterwear();
-			case "바지": return product.getCtgPants();
-			case "스니커즈": return product.getCtgSneakers();
-			case "가방": return product.getCtgBag();
-			case "모자": return product.getCtgHat();
-			case "양말": return product.getCtgSocks();
-			case "액세서리": return product.getCtgAccessories();
+		switch (ctgField) {
+			case "ctgTops": return product.getCtgTops();
+			case "ctgOuterwear": return product.getCtgOuterwear();
+			case "ctgPants": return product.getCtgPants();
+			case "ctgSneakers": return product.getCtgSneakers();
+			case "ctgBag": return product.getCtgBag();
+			case "ctgHat": return product.getCtgHat();
+			case "ctgSocks": return product.getCtgSocks();
+			case "ctgAccessories": return product.getCtgAccessories();
 			default: return 0;
 		}
 	}

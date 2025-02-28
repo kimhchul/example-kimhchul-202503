@@ -39,5 +39,22 @@ public class Product {
 	//악세서리
 	private Integer ctgAccessories;
 
+	public Product() {
+	}
+
+	// 생성자
+	public Product(String brand, Integer ctgTops, Integer ctgOuterwear, Integer ctgPants
+			, Integer ctgSneakers, Integer ctgBag, Integer ctgHat, Integer ctgSocks, Integer ctgAccessories) {
+		this.brand = brand;
+		this.ctgTops = ctgTops;
+		this.ctgOuterwear = ctgOuterwear;
+		this.ctgPants = ctgPants;
+		this.ctgSneakers = ctgSneakers;
+		this.ctgBag = ctgBag;
+		this.ctgHat = ctgHat;
+		this.ctgSocks = ctgSocks;
+		this.ctgAccessories = ctgAccessories;
+	}
+
 }
 
