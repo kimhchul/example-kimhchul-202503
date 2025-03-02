@@ -16,10 +16,11 @@ public class SwaggerConfig {
 		return new OpenAPI()
 				.components(new Components())
 				.info(apiInfo());
+
 	}
 
 	private Info apiInfo() {
-		return new Info().title("test").description("ssss").version("1.0");
+		return new Info().title("과제 API 리스트").description("과제 API 리스트").version("1.0");
 
 	}
 }

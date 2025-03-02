@@ -2,22 +2,42 @@ package com.example.productapi.service;
 
 import com.example.productapi.dto.ResponseCtgInfoDto;
 import com.example.productapi.dto.ResponseLowPriceByCtgDto;
-import com.example.productapi.dto.ResponseLowPriceByNameDto;
+import com.example.productapi.dto.ResponseLowPriceByBrandDto;
 import com.example.productapi.dto.ResponseCtgDto;
 import com.example.productapi.entity.Product;
 import com.example.productapi.repository.ProductRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
+@Slf4j
 @Service
 public class ProductService {
 
 	@Autowired
 	private ProductRepository productRepository;
 
-	// 1. 컬럼별 최저가격과 해당 Name 조회 및 총합 계산
+	/**
+	 * 카테고리명 매핑 (컬러명 - 카테고리명)
+	 */
+	public final static Map<String, ResponseCtgDto> ctgMappingMap = new HashMap<String, ResponseCtgDto>() {
+		{
+			put("ctgTops", new ResponseCtgDto("ctgTops","상의",1));
+			put("ctgOuterwear", new ResponseCtgDto("ctgOuterwear","아우터",2));
+			put("ctgPants", new ResponseCtgDto("ctgPants","바지",3));
+			put("ctgSneakers", new ResponseCtgDto("ctgSneakers","스니커즈",4));
+			put("ctgBag", new ResponseCtgDto("ctgBag","가방",5));
+			put("ctgHat", new ResponseCtgDto("ctgHat","모자",6));
+			put("ctgSocks", new ResponseCtgDto("ctgSocks","양말",7));
+			put("ctgAccessories", new ResponseCtgDto("ctgAccessories","악세서리",8));
+		}
+	};
+
+	// 카테고리별 최저가격과 해당 브랜드를을 조회하고, 총합을 반환합니다.
 	public ResponseLowPriceByCtgDto getLowPriceByCtg() {
 
 
@@ -31,7 +51,6 @@ public class ProductService {
 
 		List<Product> products = productRepository.findAll();
 
-		//Map<String, Object> result = new HashMap<>();
 		ResponseLowPriceByCtgDto result = new ResponseLowPriceByCtgDto();
 
 		List<ResponseCtgDto> resultCtgList = new ArrayList<ResponseCtgDto>();
@@ -39,24 +58,15 @@ public class ProductService {
 
 		int totalSum = 0;
 
-		HashMap<String, String> ctgMappingMap = new HashMap<String, String>();
-		ctgMappingMap.put("ctgTops","상의");
-		ctgMappingMap.put("ctgOuterwear","아우터");
-		ctgMappingMap.put("ctgPants","바지");
-		ctgMappingMap.put("ctgSneakers","스니커즈");
-		ctgMappingMap.put("ctgBag","가방");
-		ctgMappingMap.put("ctgHat","모자");
-		ctgMappingMap.put("ctgSocks","양말");
-		ctgMappingMap.put("ctgAccessories","악세서리");
 
 		for(String key : ctgMappingMap.keySet())
 		{
-			String ctgField = key;
+			String ctg = key;
 			int minPrice = Integer.MAX_VALUE;
 			String minBrand = "";
 
 			for (Product p : products) {
-				int price = getCtgValue(p, ctgField);
+				int price = getCtgValue(ctg, p);
 				if (price < minPrice) {
 					minPrice = price;
 					minBrand = p.getBrand();
@@ -64,21 +74,23 @@ public class ProductService {
 			}
 
 			totalSum += minPrice;
-			ResponseCtgDto itemDto = new ResponseCtgDto();
-			itemDto.setCtg(ctgField);
-			itemDto.setBrand(minBrand);
-			itemDto.setPrice(minPrice);
-			resultCtgList.add(itemDto);
-		}
+			ResponseCtgDto resCtgDto = new ResponseCtgDto();
+			BeanUtils.copyProperties(ctgMappingMap.get(ctg), resCtgDto);
 
+			resCtgDto.setBrand(minBrand);
+			resCtgDto.setPrice(minPrice);
+			resultCtgList.add(resCtgDto);
+		}
+		//sort order 기준 정렬
+		Collections.sort(resultCtgList);
 		result.setTotalSum(totalSum);
-		result.setDescription("카테고리별 최저가 항목 정보 & 카테고리별 최저가 항목의 합");
+		result.setResMsg("카테고리별 최저가 항목 정보 & 카테고리별 최저가 항목의 합");
 
 		return result;
 	}
 
-	// 2. Name별 8개 컬럼 총합이 가장 작은 상품 조회
-	public ResponseLowPriceByNameDto getLowPriceByName() {
+	// 8개 컬럼의 총합이 가장 작은 상품 정보를 조회합니다.
+	public ResponseLowPriceByBrandDto getLowPriceByBrand() {
 
 		/**
 		 * 1. 전체 테이블 내용 모두 가져옴
@@ -87,7 +99,7 @@ public class ProductService {
 		 * 2. 각 브랜드별 카테고리 합산 가격을 구함
 		 * 3. 최소값을 가지는 브랜드의 정보를 리턴함
 		 */
-		ResponseLowPriceByNameDto result = new ResponseLowPriceByNameDto();
+		ResponseLowPriceByBrandDto result = new ResponseLowPriceByBrandDto();
 
 
 		List<Product> products = productRepository.findAll();
@@ -106,24 +118,37 @@ public class ProductService {
 		}
 
 		if (minProduct != null) {
-			//?? 변수명확인
-			result.setCtg(minProduct.getBrand());
+			List<ResponseCtgDto> resultCtgList = new ArrayList<ResponseCtgDto>();
+
+			resultCtgList.add(setCtgDto("ctgTops", minProduct));
+			resultCtgList.add(setCtgDto("ctgOuterwear", minProduct));
+			resultCtgList.add(setCtgDto("ctgPants", minProduct));
+			resultCtgList.add(setCtgDto("ctgSneakers", minProduct));
+			resultCtgList.add(setCtgDto("ctgBag", minProduct));
+			resultCtgList.add(setCtgDto("ctgHat", minProduct));
+			resultCtgList.add(setCtgDto("ctgSocks", minProduct));
+			resultCtgList.add(setCtgDto("ctgAccessories", minProduct));
+
+			result.setBrand(minProduct.getBrand());
+
+			result.setCtgList(resultCtgList);
+
 			result.setTotalSum(minTotal);
-			result.setProduct(minProduct);
-			result.setDescription("항목의 총합이 가장 작은 항목의 정보");
+
+			result.setResMsg("항목의 총합이 가장 작은 항목의 정보");
 
 		}
 		else
 		{
 
-			result.setDescription("조회실패.");
+			result.setResMsg("조회실패.");
 		}
 
 		return result;
 	}
 
 	// 3. 특정 컬럼에서 최고가격의 상품 조회
-	public ResponseCtgInfoDto getCtgInfo(String ctg) {
+	public ResponseCtgInfoDto getCtgInfo(String ctgName) {
 
 		/**
 		 * 1. 전체 테이블 내용 모두 가져옴
@@ -133,10 +158,21 @@ public class ProductService {
 		 * 3. 최소값을 가지는 브랜드의 정보를 리턴함
 		 */
 
+		ResponseCtgInfoDto result = new ResponseCtgInfoDto();
+
+		String ctg = findCtgByCtgName(ctgName);
+
+		result.setCtgName(ctgName);
+		result.setCtg(ctg);
+
+		//param validator
+		if(ctg == null) {
+			result.setResMsg("카테고리정보없음");
+			return result;
+		}
 
 		List<Product> products = productRepository.findAll();
 
-		ResponseCtgInfoDto result = new ResponseCtgInfoDto();
 
 		Product minProduct = null;
 		Product maxProduct = null;
@@ -153,7 +189,7 @@ public class ProductService {
 		 */
 
 		for (Product p : products) {
-			int price = getCtgValue(p, ctg);
+			int price = getCtgValue(ctg, p);
 			if (price > maxPrice) {
 				maxPrice = price;
 				maxProduct = p;
@@ -165,20 +201,19 @@ public class ProductService {
 			}
 		}
 
-
 		if (minProduct != null) {
-			result.setMinProduct(minProduct);
+			result.setMinCtgDto(setCtgDto(ctg, minProduct));
 		}
 		if (maxProduct != null) {
-			result.setMaxProduct(maxProduct);
+			result.setMaxCtgDto(setCtgDto(ctg, maxProduct));
 		}
 
 		if (minProduct == null || maxProduct == null)
 		{
-			result.setDescription("정상조회 실패");
+			result.setResMsg("정상조회 실패");
 		}
 		else {
-			result.setDescription("카테고리기준 브랜드정보");
+			result.setResMsg("카테고리기준 브랜드정보");
 		}
 
 		return result;
@@ -186,6 +221,22 @@ public class ProductService {
 
 	// 4. Name을 키로 Row 추가/변경/삭제
 	public String changeInfo(String type, Product product) {
+
+		//type validator
+		if(
+			!("insert".equals(type)
+			|| "update".equals(type)
+			|| "delete".equals(type))
+		)
+		{
+			return "insert, update, delete 만 입력가능합니다";
+		}
+		//key validator
+		if(!StringUtils.hasText(product.getBrand()))
+		{
+			return "Brand 값은 필수입력값입니다";
+		}
+
 		switch (type.toLowerCase()) {
 			case "insert":
 				if (productRepository.existsById(product.getBrand())) {
@@ -194,57 +245,35 @@ public class ProductService {
 				productRepository.save(product);
 				return "추가되었습니다.";
 			case "update":
-
 				Optional<Product> productToUpdate = productRepository.findById(product.getBrand());
 
 				if (productToUpdate.isEmpty()) {
 					return "존재하지 않는 Brand 입니다.";
 				}
 
+				//db에 존재하는 값 조회
 				Product existingProduct = productToUpdate.get();
 
-				if(product.getCtgTops() != null) {
-					existingProduct.setCtgTops(product.getCtgTops());
-				}
-				if(product.getCtgOuterwear() != null) {
-					existingProduct.setCtgOuterwear(product.getCtgOuterwear());
-				}
-				if(product.getCtgPants() != null) {
-					existingProduct.setCtgPants(product.getCtgPants());
-				}
-				if(product.getCtgSneakers() != null) {
-					existingProduct.setCtgSneakers(product.getCtgSneakers());
-				}
-				if(product.getCtgBag() != null) {
-					existingProduct.setCtgBag(product.getCtgBag());
-				}
-				if(product.getCtgHat() != null) {
-					existingProduct.setCtgHat(product.getCtgHat());
-				}
-				if(product.getCtgSocks() != null) {
-					existingProduct.setCtgSocks(product.getCtgSocks());
-				}
-				if(product.getCtgAccessories() != null) {
-					existingProduct.setCtgAccessories(product.getCtgAccessories());
-				}
+				//변경입력값 추가
+				makeProductEntity(existingProduct, product);
 
-
+				//update 처리
 				productRepository.save(existingProduct);
 				return "변경되었습니다.";
 			case "delete":
 				if (!productRepository.existsById(product.getBrand())) {
-					return "존재하지 않는 Name입니다.";
+					return "존재하지 않는 Brand입니다.";
 				}
 				productRepository.deleteById(product.getBrand());
 				return "삭제되었습니다.";
 			default:
-				return "유효하지 않은 타입입니다. (Insert, Update, Delete 중 선택)";
+				return "유효하지 않은 타입입니다. (insert, update, delete 중 선택)";
 		}
 	}
 
-	// 헬퍼 메서드: 동적으로 ctg 값 가져오기
-	private int getCtgValue(Product product, String ctgField) {
-		switch (ctgField) {
+	// ctg 정보 -> Db cloumn 응답
+	private int getCtgValue(String ctg, Product product) {
+		switch (ctg) {
 			case "ctgTops": return product.getCtgTops();
 			case "ctgOuterwear": return product.getCtgOuterwear();
 			case "ctgPants": return product.getCtgPants();
@@ -254,6 +283,59 @@ public class ProductService {
 			case "ctgSocks": return product.getCtgSocks();
 			case "ctgAccessories": return product.getCtgAccessories();
 			default: return 0;
+		}
+	}
+
+	//세부정보 응답객체 set (공통)
+	private ResponseCtgDto setCtgDto (String ctg, Product product )
+	{
+		ResponseCtgDto ctgDto = new ResponseCtgDto();
+		BeanUtils.copyProperties(ctgMappingMap.get(ctg), ctgDto);
+		ctgDto.setBrand(product.getBrand());
+		ctgDto.setPrice(getCtgValue(ctg, product));
+		return ctgDto;
+	}
+
+	//카테고리명으로 카테고리 컬럼 검색
+	private String findCtgByCtgName(String ctgName)
+	{
+		String ctg = null;
+		Optional<Map.Entry<String, ResponseCtgDto>> filter = ctgMappingMap.entrySet().stream()
+				.filter(entry -> ctgName.equals(entry.getValue().getCtgName()))
+				.findFirst();
+		//카테고리
+		if(filter.isPresent())
+			ctg = filter.get().getKey();
+
+		return ctg;
+	}
+
+	//조회된 결과에 입력된 변경값 추가
+	private void makeProductEntity(Product existingProduct, Product product)
+	{
+		if(product.getCtgTops() != null) {
+			existingProduct.setCtgTops(product.getCtgTops());
+		}
+		if(product.getCtgOuterwear() != null) {
+			existingProduct.setCtgOuterwear(product.getCtgOuterwear());
+		}
+		if(product.getCtgPants() != null) {
+			existingProduct.setCtgPants(product.getCtgPants());
+		}
+		if(product.getCtgSneakers() != null) {
+			existingProduct.setCtgSneakers(product.getCtgSneakers());
+		}
+		if(product.getCtgBag() != null) {
+			existingProduct.setCtgBag(product.getCtgBag());
+		}
+		if(product.getCtgHat() != null) {
+			existingProduct.setCtgHat(product.getCtgHat());
+		}
+		if(product.getCtgSocks() != null) {
+			existingProduct.setCtgSocks(product.getCtgSocks());
+		}
+		if(product.getCtgAccessories() != null) {
+			existingProduct.setCtgAccessories(product.getCtgAccessories());
 		}
 	}
 }

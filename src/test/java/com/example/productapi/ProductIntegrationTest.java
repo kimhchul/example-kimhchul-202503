@@ -35,7 +35,6 @@ class ProductIntegrationTest {
 		productRepository.save(new Product("H", 10800, 6300, 3100, 9700, 2100, 1600, 2000, 2000));
 		productRepository.save(new Product("I", 11400, 6700, 3200, 9500, 2400, 1700, 1700, 2400));
 
-
 	}
 
 	@Test
@@ -56,27 +55,27 @@ class ProductIntegrationTest {
 	}
 
 	@Test
-	void testGetLowPriceByName() {
-		ResponseEntity<Map> response = restTemplate.getForEntity("/query/getLowPriceByName", Map.class);
+	void testGetLowPriceByBrand() {
+		ResponseEntity<Map> response = restTemplate.getForEntity("/query/getLowPriceByBrand", Map.class);
 
 		assertThat(response.getStatusCodeValue()).isEqualTo(200);
 		Map<String, Object> body = response.getBody();
 		assertThat(body).isNotNull();
 
 		assertThat(body.get("totalSum")).isEqualTo(37600);
-		assertThat(body.get("ctg")).isEqualTo("B");
+		assertThat(body.get("brand")).isEqualTo("B");
 	}
 
 	@Test
 	void testGetCtgInfo() {
-		ResponseEntity<Map> response = restTemplate.getForEntity("/query/getCtgInfo?ctgName=ctg6", Map.class);
+		ResponseEntity<Map> response = restTemplate.getForEntity("/query/getCtgInfo?ctgName=상의", Map.class);
 
 		assertThat(response.getStatusCodeValue()).isEqualTo(200);
 		Map<String, Object> body = response.getBody();
 		assertThat(body).isNotNull();
 
-		assertThat(body.get("minProduct")).isEqualTo(Map.of("brand", "H", "ctg1",10800, "ctg2",6300, "ctg3",3100, "ctg4",9700
-				, "ctg5",2100, "ctg6",1600, "ctg7",2000, "ctg8",2000));
+		assertThat(body.get("minCtgDto")).isEqualTo(Map.of("brand","B", "ctg","ctgTops", "ctgName","상의", "price",10500, "sortOrder",1));
+		assertThat(body.get("maxCtgDto")).isEqualTo(Map.of("brand","I", "ctg","ctgTops", "ctgName","상의", "price",11400, "sortOrder",1));
 
 	}
 
