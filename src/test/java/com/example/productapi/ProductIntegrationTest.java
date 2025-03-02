@@ -9,6 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 // 랜덤 포트를 사용하여 실제 웹 환경에서 테스트
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
@@ -78,6 +80,36 @@ class ProductIntegrationTest {
 		assertThat(body.get("maxCtgDto")).isEqualTo(Map.of("brand","I", "ctg","ctgTops", "ctgName","상의", "price",11400, "sortOrder",1));
 
 	}
+
+	@Test
+	void testChangeCtgCtgInfo() {
+
+		//Insert
+		Product p1 = new Product("K", 11200, 5500, 4200, 9000, 2000, 1700, 1800, 2300);
+		ResponseEntity<String> testInsertResponse = restTemplate.postForEntity("/command/changeInfo?type=insert", p1, String.class);
+		assertThat(testInsertResponse.getStatusCodeValue()).isEqualTo(200);
+		String testInsertResponseStr = testInsertResponse.getBody();
+		assertThat(testInsertResponseStr).isNotNull();
+		assertThat(testInsertResponseStr).isEqualTo("추가되었습니다.");
+
+		//Update
+		Product p2 = new Product("K", 100, 200, 300, 400, 500, 600, 700, 800);
+		ResponseEntity<String> testUpdateResponse = restTemplate.postForEntity("/command/changeInfo?type=update", p2, String.class);
+		assertThat(testUpdateResponse.getStatusCodeValue()).isEqualTo(200);
+		String testUpdateResponseStr = testUpdateResponse.getBody();
+		assertThat(testUpdateResponseStr).isNotNull();
+		assertThat(testUpdateResponseStr).isEqualTo("변경되었습니다.");
+
+		//Delete
+		Product p3 = new Product();
+		p3.setBrand("K");
+		ResponseEntity<String> testDeleteresponse = restTemplate.postForEntity("/command/changeInfo?type=delete", p3, String.class);
+		assertThat(testDeleteresponse.getStatusCodeValue()).isEqualTo(200);
+		String testDeleteResponseStr = testDeleteresponse.getBody();
+		assertThat(testDeleteResponseStr).isNotNull();
+		assertThat(testDeleteResponseStr).isEqualTo("삭제되었습니다.");
+	}
+
 
 
 }
