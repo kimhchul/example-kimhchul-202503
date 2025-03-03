@@ -11,12 +11,12 @@
    	- API #4. 브랜드 및 상품을 추가/변경/삭제 API
          	- URI : /command/changeInfo
 4. 코드빌드,테스트,실행방법
-   	- mac OS, intellij, jdk 17+ 환경에서 개발됨
-   	- h2, swagger 추가
-   	- ProductApiApplication.java
-   	  	- 프로그램 실행
-   	- ProductIntegrationTest.java
-   	  	- 테스트코드 실행
+   - mac OS, intellij, jdk 17+ 환경에서 개발됨
+   - h2, swagger 추가
+   - ProductApiApplication.java
+      - 프로그램 실행
+   - ProductIntegrationTest.java
+      - 테스트코드 실행
 6. 기타추가정보
    - Swagger UI API 페이지 추가
      	http://localhost:8080/swagger-ui/index.html
