@@ -26,6 +26,7 @@ class ProductIntegrationTest {
 	@Autowired
 	private ProductRepository productRepository;
 
+	//테스트 데이터 초기화
 	@BeforeEach
 	void setUp() {
 		// 테스트 전 데이터 초기화
@@ -39,6 +40,10 @@ class ProductIntegrationTest {
 
 	}
 
+	/**
+	 * getLowPriceByCtg 테스트
+	 * setup된 데이터 기준으로 일부 응답결과 (totalSum, ctgList 사이즈등)에 대한 확인
+	 */
 	@Test
 	void testGetLowPriceByCtg() {
 		ResponseEntity<Map> response = restTemplate.getForEntity("/query/getLowPriceByCtg", Map.class);
@@ -56,6 +61,10 @@ class ProductIntegrationTest {
 		assertThat(ctgList.size()).isEqualTo(8);
 	}
 
+	/**
+	 * getLowPriceByBrand 테스트
+	 * setup된 데이터 기준으로 일부 응답결과 (totalSum, brand 이름)에 대한 확인
+	 */
 	@Test
 	void testGetLowPriceByBrand() {
 		ResponseEntity<Map> response = restTemplate.getForEntity("/query/getLowPriceByBrand", Map.class);
@@ -68,6 +77,11 @@ class ProductIntegrationTest {
 		assertThat(body.get("brand")).isEqualTo("B");
 	}
 
+
+	/**
+	 * getCtgInfo?ctgName=상의 테스트
+	 * setup된 데이터 기준의 상의 카테고리에 대하여 응답결과 (최소카테고리, 최고카테고리)에 대한 확인
+	 */
 	@Test
 	void testGetCtgInfo() {
 		ResponseEntity<Map> response = restTemplate.getForEntity("/query/getCtgInfo?ctgName=상의", Map.class);
@@ -81,6 +95,10 @@ class ProductIntegrationTest {
 
 	}
 
+	/**
+	 * changeInfo 테스트
+	 * 	새로운 product를 insert -> update -> delete 에 대한 응답 확인
+	 */
 	@Test
 	void testChangeCtgCtgInfo() {
 
